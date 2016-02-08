@@ -1,6 +1,6 @@
 ## Labyrinth Explorer
 
-Pygame ~useless~ randomless labyrinth explorer generator
+Random labyrinth generator with Pygame explorer
 
 ![pic](screenshot.png)
 
