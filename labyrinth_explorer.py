@@ -67,6 +67,57 @@ class Player(object):
                 if dy < 0:  # Moving up; Hit the bottom side of the wall
                     self.rect.top = wall.rect.bottom
 
+    @property
+    def position(self):
+        return self.rect.x, self.rect.y
+
+
+class AI(Player):
+    memo = {}
+    path = {}
+
+    dx = 2
+    dy = 2
+
+    def run(self):
+        self.remember()
+        self.walk()
+        self.forget_it()
+
+    def remember(self):
+        self.path[time()] = self.position
+        self.memo.setdefault(self.position, 0).__add__(1)
+
+    def walk(self):
+        motion = self.decide()
+        self.move(*motion)
+
+    def decide(self):
+        if self.memo[self.position] > 10:
+            self.change()
+
+        if len(self.path) > 2:
+            t1, t2 = sorted(self.path, reverse=True)[:2]
+            (x1, y1), (x2, y2) = self.path[t1], self.path[t2]
+            distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+            if distance == 0:
+                self.change()
+
+        return self.dx, self.dy
+
+    def forget_it(self):
+        if len(self.path) > 3:
+            del self.path[min(self.path)]
+
+    def change(self):
+        from random import choice
+        dice = choice([0, 1])
+
+        if dice:
+            self.dx *= -1
+        else:
+            self.dy *= -1
+
 
 # Nice class to hold a wall rect
 class Wall(object):
@@ -84,7 +135,7 @@ def draw_counter(time):
 
 
 def setup():
-    global walls, player, clock, end_rect, screen
+    global walls, player, clock, end_rect, screen, computer
     # Initialise pygame
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pygame.init()
@@ -98,6 +149,8 @@ def setup():
     level = generate()
     x, y = safe_position(level)
     player = Player(x * BLOCKSIZE, y * BLOCKSIZE)  # create the player
+    x, y = safe_position(level)
+    computer = AI(x * BLOCKSIZE, y * BLOCKSIZE)
 
     # Holds the level layout in a list of strings.
 
@@ -146,10 +199,12 @@ def game():
             raise SystemExit("You win! @{:2f}s".format(time() - start))
         # Draw the scene
         screen.fill(BLACK)
+        computer.run()
         for wall in walls:
             pygame.draw.rect(screen, WHITE, wall.rect)
         pygame.draw.rect(screen, RED, end_rect)
         pygame.draw.rect(screen, GREEN, player.rect)
+        pygame.draw.rect(screen, YELLOW, computer.rect)
         draw_counter(time() - start)
         pygame.display.flip()
 
