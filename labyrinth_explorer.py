@@ -102,12 +102,9 @@ class AI(Player):
         if len(self.path) > 2:
             t1, t2 = sorted(self.path, reverse=True)[:2]
             (x1, y1), (x2, y2) = self.path[t1], self.path[t2]
-            dx = abs(x1 - x2)
-            dy = abs(y1 - y2)
-            if dx == 0:
-                self.dx *= -1
-            if dy == 0:
-                self.dy *= -1
+            diff = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+            if not diff:
+                self.change()
 
         return self.dx, self.dy
 
@@ -203,6 +200,8 @@ def game():
         # Just added this to make it slightly fun ;)
         if player.rect.colliderect(end_rect):
             raise SystemExit("You win! @{:2f}s".format(time() - start))
+        if computer.rect.colliderect(end_rect):
+            raise SystemExit("You lost! The computer wins")
         # Draw the scene
         screen.fill(BLACK)
         computer.run()
