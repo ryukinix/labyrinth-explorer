@@ -56,14 +56,14 @@ def draw_maze(nowalls, w=WIDTH, h=HEIGHT):
     return arrange
 
 
-def get_end(maze):
+def random_replace(maze, block):
     from random import randint
     x, y = randint(1, len(maze) - 2), randint(0, len(maze[0]) - 1)
     print('Random end: ', x, y)
     if maze[x][y] == ' ':
-        maze[x] = maze[x][:y] + 'E' + maze[x][y + 1:]
+        maze[x] = maze[x][:y] + block + maze[x][y + 1:]
     else:
-        maze = get_end(maze)
+        maze = random_replace(maze, block)
 
     return maze
 
@@ -78,11 +78,12 @@ def draw(maze):
         print('{:>2}'.format(x), line)
 
 
-def generate():
+def generate(blocks='EPC'):
     nw = make_maze()
     maze = draw_maze(nw)
     # nwabs = nowallsabs(nw)
-    maze = get_end(maze)
+    for block in blocks:
+        maze = random_replace(maze, block)
     draw(maze)
     translated = translate(maze)
     return translated

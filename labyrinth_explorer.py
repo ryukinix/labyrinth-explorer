@@ -25,8 +25,11 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 
 
+#
+# DEPRECATED
+#
 def safe_position(level):  # ??
-    a, b = len(level) - 2, len(level[0]) - 1
+    a, b = len(level) - 2, len(level[0]) - 2
     x, y = (randint(1, a), randint(1, b))
     if level[x][y] != ' ':
         print('Not safe', x, y, '->', level[x][y])
@@ -99,9 +102,12 @@ class AI(Player):
         if len(self.path) > 2:
             t1, t2 = sorted(self.path, reverse=True)[:2]
             (x1, y1), (x2, y2) = self.path[t1], self.path[t2]
-            distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
-            if distance == 0:
-                self.change()
+            dx = abs(x1 - x2)
+            dy = abs(y1 - y2)
+            if dx == 0:
+                self.dx *= -1
+            if dy == 0:
+                self.dy *= -1
 
         return self.dx, self.dy
 
@@ -147,10 +153,6 @@ def setup():
     clock = pygame.time.Clock()
     walls = []  # List to hold the walls
     level = generate()
-    x, y = safe_position(level)
-    player = Player(x * BLOCKSIZE, y * BLOCKSIZE)  # create the player
-    x, y = safe_position(level)
-    computer = AI(x * BLOCKSIZE, y * BLOCKSIZE)
 
     # Holds the level layout in a list of strings.
 
@@ -160,8 +162,12 @@ def setup():
         for col in row:
             if col == "W":
                 Wall((x, y))
-            if col == "E":
+            elif col == "E":
                 end_rect = pygame.Rect(x, y, BLOCKSIZE, BLOCKSIZE)
+            elif col == "P":
+                player = Player(x, y)
+            elif col == "C":
+                computer = AI(x, y)
             x += BLOCKSIZE
         y += BLOCKSIZE
         x = 0
